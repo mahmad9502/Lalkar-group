@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ur" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lalkar Group - Attendance System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        medical: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                            950: '#042f2e'
+                        }
+                    },
+                    fontFamily: {
+                        arabic: ['Amiri', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .arabic-text {
+            font-family: 'Amiri', serif;
+            line-height: 2.2;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased flex flex-col min-h-screen bg-gradient-to-br from-slate-100 via-teal-50/40 to-slate-200">
+
+    <!-- Header Navigation -->
+    <header class="bg-gradient-to-r from-medical-950 via-medical-900 to-medical-950 text-white shadow-xl border-b-4 border-teal-500 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-2xl shadow-md border border-teal-300/30">
+                    <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        <span>Lalkar Group</span>
+                        <span class="text-xs bg-teal-500/30 text-teal-200 border border-teal-400/30 px-2 py-0.5 rounded-full font-normal hidden sm:inline-block">Attendance Portal</span>
+                    </h1>
+                    <p class="text-xs text-teal-200">Staff & Member Online Attendance System</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <button id="adminBtn" onclick="openAdminModal()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-teal-300 border border-teal-500/40 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md hover:shadow-lg">
+                    <i class="fa-solid fa-user-shield text-teal-400"></i>
+                    <span>Admin Control</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:py-8 flex flex-col items-center justify-center">
+
+        <!-- User Attendance Section -->
+        <div id="userPortal" class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden transition-all">
+            
+            <div class="bg-gradient-to-r from-medical-900 via-medical-800 to-teal-900 p-6 text-center text-white relative overflow-hidden">
+                <div class="absolute -right-8 -bottom-8 opacity-10 text-white text-9xl pointer-events-none">
+                    <i class="fa-solid fa-clipboard-user"></i>
+                </div>
+                <div class="inline-flex items-center justify-center w-12 h-12 bg-teal-500/20 rounded-full mb-2 text-teal-300 border border-teal-400/30">
+                    <i class="fa-solid fa-id-card text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-white tracking-wide">Lalkar Group Attendance</h2>
+                <p class="text-teal-100 text-xs sm:text-sm mt-1">Apna registered mobile number likhein, naam khud aa jayega</p>
+            </div>
+
+            <!-- Time Rule Status Banner -->
+            <div class="bg-teal-50/80 border-b border-teal-100 px-5 py-3 flex flex-wrap justify-between items-center text-xs sm:text-sm text-slate-700 gap-2">
+                <div class="flex items-center gap-2 font-medium">
+                    <i class="fa-regular fa-clock text-medical-700 text-base"></i>
+                    <span>Current Time: <strong id="liveClock" class="text-slate-900 font-bold font-mono">--:--:--</strong></span>
+                </div>
+                <div class="flex items-center gap-2 bg-white px-2.5 py-1 rounded-lg border border-teal-200 shadow-sm">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="timeRulesText" class="font-semibold text-slate-700 text-xs">12:00 AM – 09:00 AM (Present) | 09:01 AM onwards (Late)</span>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <form id="attendanceForm" onsubmit="handleAttendanceSubmit(event)" class="p-6 sm:p-8 space-y-5">
+                
+                <!-- Mobile Phone Input -->
+                <div>
+                    <label for="phoneNumber" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                        Mobile Phone Number <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative rounded-xl shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-teal-600">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <input type="tel" id="phoneNumber" required placeholder="03001234567" oninput="lookupMemberName()"
+                            pattern="[0-9]{10,12}"
+                            class="block w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-600 focus:border-teal-600 text-slate-900 tracking-wide font-medium transition-all text-sm" />
+                    </div>
+                    <p id="phoneStatusMsg" class="mt-1 text-xs text-slate-500">Apna registered mobile number enter karein</p>
+                </div>
+
+                <!-- Member Name (Auto Fetched) -->
+                <div>
+                    <label for="staffName" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                        Member Name (Auto Verified)
+                    </label>
+                    <div class="relative rounded-xl shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-teal-600">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <input type="text" id="staffName" readonly placeholder="Phone number enter karne par naam khud show hoga" 
+                            class="block w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-xl text-slate-700 font-bold text-sm cursor-not-allowed" />
+                    </div>
+                </div>
+
+                <!-- Darood Ibrahim Box -->
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200/80 rounded-2xl p-5 text-center shadow-sm relative">
+                    <div class="text-xs font-bold uppercase tracking-wider text-amber-900 mb-2 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-hands-praying text-amber-600"></i>
+                        <span>Darood-e-Ibrahim Recitation</span>
+                    </div>
+                    
+                    <p class="arabic-text text-xl sm:text-2xl text-emerald-950 font-bold mb-3 text-center leading-loose">
+                        اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ ، اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ
+                    </p>
+
+                    <p class="text-xs text-amber-900 font-medium bg-amber-100/70 p-2.5 rounded-lg border border-amber-200">
+                        "Allahumma Salli Ala Muhammadin Wa Ala Ali Muhammadin Kama Sallaita Ala Ibrahima Wa Ala Ali Ibrahima Innaka Hamidum Majid..."
+                    </p>
+                </div>
+
+                <!-- Mandatory Checkbox -->
+                <div class="flex items-start gap-3 bg-teal-50/60 p-4 rounded-xl border border-teal-200/80 hover:border-teal-400 transition-colors cursor-pointer" onclick="toggleCheckbox(event)">
+                    <div class="flex items-center h-5 mt-0.5">
+                        <input id="daroodCheck" type="checkbox" required class="w-5 h-5 text-teal-700 bg-white border-slate-300 rounded focus:ring-teal-600 focus:ring-offset-0 cursor-pointer">
+                    </div>
+                    <label for="daroodCheck" class="text-xs sm:text-sm text-slate-700 font-semibold cursor-pointer select-none leading-relaxed">
+                        Main tasdeeq karta/karti hoon ke main ne Darood-e-Ibrahim parh liya hai aur meri di gayi maloomat darust hain. <span class="text-red-500 font-bold">*</span>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-medical-800 to-teal-700 hover:from-medical-900 hover:to-teal-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-base border border-teal-400/30">
+                    <i class="fa-solid fa-check-double text-teal-300"></i>
+                    <span>Mark Attendance (Hazri Lagayein)</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Admin Dashboard Section -->
+        <div id="adminPortal" class="w-full bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden hidden">
+            <div class="bg-slate-900 text-white p-5 sm:p-6 flex flex-wrap justify-between items-center gap-4 border-b border-slate-800">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-teal-500 text-slate-950 text-xs px-2.5 py-0.5 rounded font-extrabold uppercase">Lalkar Group Admin</span>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-white">Management Panel</h2>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Manage Registered Names & View Attendance Records</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="exportToCSV()" class="bg-teal-700 hover:bg-teal-600 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <span>Export CSV Log</span>
+                    </button>
+                    <button onclick="closeAdminPortal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors border border-slate-700">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Exit Admin</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-6 space-y-6">
+                
+                <!-- Admin Section Tabs -->
+                <div class="flex gap-2 border-b border-slate-200 pb-2">
+                    <button id="tabRecordsBtn" onclick="switchAdminTab('records')" class="px-4 py-2 text-xs font-bold rounded-lg bg-teal-700 text-white shadow">
+                        <i class="fa-solid fa-list-check mr-1"></i> Attendance Records
+                    </button>
+                    <button id="tabMembersBtn" onclick="switchAdminTab('members')" class="px-4 py-2 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        <i class="fa-solid fa-user-plus mr-1"></i> Manage Saved Names
+                    </button>
+                </div>
+
+                <!-- VIEW 1: Attendance Records Tab -->
+                <div id="recordsView" class="space-y-6">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold uppercase text-slate-500">Total Entries</p>
+                                <h3 id="statTotal" class="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold uppercase text-emerald-700">Present (On Time)</p>
+                                <h3 id="statPresent" class="text-2xl sm:text-3xl font-extrabold text-emerald-800 mt-1">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-user-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold uppercase text-amber-700">Late Registrations</p>
+                                <h3 id="statLate" class="text-2xl sm:text-3xl font-extrabold text-amber-800 mt-1">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-user-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Simulation Banner -->
+                    <div class="bg-teal-50 border border-teal-200 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3 text-sm">
+                        <div class="flex items-center gap-2 text-teal-900 font-medium">
+                            <i class="fa-solid fa-clock-rotate-left text-teal-700 text-lg"></i>
+                            <span>Testing Mode: Simulate Time</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="time" id="simulatedTimeInput" class="border border-teal-300 rounded-lg px-2.5 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <button onclick="enableSimulatedTime()" class="bg-teal-700 hover:bg-teal-800 text-white px-3 py-1 rounded-lg text-xs font-semibold">Apply Time</button>
+                            <button onclick="resetSimulatedTime()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded-lg text-xs font-semibold">Reset Real Time</button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="flex flex-col sm:flex-row gap-3 justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="relative w-full sm:w-64">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="searchInput" oninput="renderAdminTable()" placeholder="Search Name or Phone..." class="w-full pl-9 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <select id="statusFilter" onchange="renderAdminTable()" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                                <option value="ALL">All Statuses</option>
+                                <option value="Present">Present Only</option>
+                                <option value="Late">Late Only</option>
+                            </select>
+
+                            <button onclick="clearAllDataPrompt()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ml-auto">
+                                <i class="fa-solid fa-trash-can"></i>
+                                <span>Clear Records</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Records Table -->
+                    <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-600 text-xs uppercase font-bold tracking-wider border-b border-slate-200">
+                                    <th class="p-3.5 text-center">Sr #</th>
+                                    <th class="p-3.5">Name</th>
+                                    <th class="p-3.5">Phone Number</th>
+                                    <th class="p-3.5">Date & Time</th>
+                                    <th class="p-3.5 text-center">Status</th>
+                                    <th class="p-3.5 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTableBody" class="divide-y divide-slate-200 text-xs font-medium text-slate-700 bg-white">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: Save Approved Names Tab -->
+                <div id="membersView" class="space-y-6 hidden">
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-4">
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-user-plus text-teal-700"></i> Add New Member / Staff Name
+                        </h3>
+                        <form onsubmit="addNewMember(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input type="text" id="newMemberName" required placeholder="Member Name (e.g. Ali Ahmed)" class="px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                            <input type="tel" id="newMemberPhone" required placeholder="Mobile Phone (e.g. 03001234567)" pattern="[0-9]{10,12}" class="px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                            <button type="submit" class="bg-teal-700 hover:bg-teal-800 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors shadow">
+                                <i class="fa-solid fa-plus mr-1"></i> Save Member
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Saved Members Table -->
+                    <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-600 text-xs uppercase font-bold tracking-wider border-b border-slate-200">
+                                    <th class="p-3.5 text-center">Sr #</th>
+                                    <th class="p-3.5">Approved Member Name</th>
+                                    <th class="p-3.5">Registered Phone</th>
+                                    <th class="p-3.5 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersTableBody" class="divide-y divide-slate-200 text-xs font-medium text-slate-700 bg-white">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- PIN Verification Modal -->
+    <div id="pinModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-5">
+            <div class="text-center">
+                <div class="w-14 h-14 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl shadow-inner">
+                    <i class="fa-solid fa-user-lock"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900">Lalkar Group Admin Access</h3>
+                <p class="text-xs text-slate-500 mt-1">Enter Secret 6-Digit PIN</p>
+            </div>
+
+            <div>
+                <label for="adminPinInput" class="block text-xs font-bold text-slate-600 uppercase mb-2 text-center">Admin Access PIN</label>
+                <input type="password" id="adminPinInput" maxlength="6" placeholder="******" class="w-full text-center text-2xl tracking-[0.5em] font-mono py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-600 focus:outline-none" onkeydown="if(event.key==='Enter') verifyAdminPin()">
+                <p id="pinErrorMsg" class="text-xs text-red-500 font-semibold mt-2 text-center hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i> Ghalat PIN! Correct PIN enter karein.</p>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeAdminModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors text-xs">Cancel</button>
+                <button onclick="verifyAdminPin()" class="w-1/2 bg-medical-800 hover:bg-medical-900 text-white font-bold py-2.5 px-4 rounded-xl transition-colors text-xs shadow">Unlock Admin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Result Modal -->
+    <div id="resultModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 text-center space-y-4">
+            <div id="modalIconContainer" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
+            </div>
+            
+            <div>
+                <h3 id="modalTitle" class="text-xl font-bold text-slate-900">--</h3>
+                <p id="modalSubtitle" class="text-xs text-slate-500 mt-1">--</p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-left text-xs space-y-2 font-medium text-slate-700">
+                <div class="flex justify-between border-b border-slate-200 pb-1.5">
+                    <span class="text-slate-400">Name:</span>
+                    <span id="modalName" class="font-bold text-slate-800">--</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-200 pb-1.5">
+                    <span class="text-slate-400">Phone:</span>
+                    <span id="modalPhone" class="text-slate-800 font-mono">--</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-200 pb-1.5">
+                    <span class="text-slate-400">Time Recorded:</span>
+                    <span id="modalTime" class="text-slate-800 font-mono">--</span>
+                </div>
+                <div class="flex justify-between items-center pt-0.5">
+                    <span class="text-slate-400">Status:</span>
+                    <span id="modalBadge">--</span>
+                </div>
+            </div>
+
+            <button onclick="closeResultModal()" class="w-full bg-medical-800 hover:bg-medical-900 text-white font-bold py-3 rounded-xl transition-colors text-xs shadow">
+                Shukriya (Done)
+            </button>
+        </div>
+    </div>
+
+    <!-- COMPLETE WORKING JAVASCRIPT LOGIC -->
+    <script>
+        const STORAGE_KEY = 'lalkar_attendance_records_v1';
+        const MEMBERS_KEY = 'lalkar_saved_members_v1';
+        const ADMIN_PIN = '030956';
+        let customSimulatedTime = null;
+
+        window.onload = function() {
+            startLiveClock();
+            seedDefaultMembers();
+        };
+
+        function startLiveClock() {
+            const clockEl = document.getElementById('liveClock');
+            setInterval(() => {
+                const now = getEffectiveDate();
+                clockEl.textContent = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }, 1000);
+        }
+
+        function getEffectiveDate() {
+            const now = new Date();
+            if (customSimulatedTime) {
+                const [hours, minutes] = customSimulatedTime.split(':');
+                now.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0);
+            }
+            return now;
+        }
+
+        function toggleCheckbox(e) {
+            if (e.target.tagName !== 'INPUT') {
+                const checkbox = document.getElementById('daroodCheck');
+                checkbox.checked = !checkbox.checked;
+            }
+        }
+
+        // Seed default sample members if none exist
+        function seedDefaultMembers() {
+            if (!localStorage.getItem(MEMBERS_KEY)) {
+                const sampleMembers = [
+                    { phone: '03001234567', name: 'Ali Ahmed' },
+                    { phone: '03123456789', name: 'Usman Khan' }
+                ];
+                localStorage.setItem(MEMBERS_KEY, JSON.stringify(sampleMembers));
+            }
+        }
+
+        function getSavedMembers() {
+            const data = localStorage.getItem(MEMBERS_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        // Auto-Lookup Member Name by Phone
+        function lookupMemberName() {
+            const phoneInput = document.getElementById('phoneNumber').value.trim();
+            const nameInput = document.getElementById('staffName');
+            const statusMsg = document.getElementById('phoneStatusMsg');
+            
+            const members = getSavedMembers();
+            const matchedMember = members.find(m => m.phone === phoneInput);
+
+            if (matchedMember) {
+                nameInput.value = matchedMember.name;
+                statusMsg.textContent = '✅ Verified Member: ' + matchedMember.name;
+                statusMsg.className = 'mt-1 text-xs text-emerald-600 font-bold';
+            } else {
+                nameInput.value = '';
+                if (phoneInput.length >= 10) {
+                    statusMsg.textContent = '❌ Yeh phone number Admin ki list me registered nahi hai!';
+                    statusMsg.className = 'mt-1 text-xs text-red-500 font-bold';
+                } else {
+                    statusMsg.textContent = 'Apna registered mobile number enter karein';
+                    statusMsg.className = 'mt-1 text-xs text-slate-500';
+                }
+            }
+        }
+
+        function handleAttendanceSubmit(event) {
+            event.preventDefault();
+
+            const phoneInput = document.getElementById('phoneNumber').value.trim();
+            const staffName = document.getElementById('staffName').value.trim();
+            const daroodChecked = document.getElementById('daroodCheck').checked;
+
+            if (!staffName) {
+                alert('Aap ka mobile number Admin list me nahi hai. Pehle Admin se apna naam save karwayein.');
+                return;
+            }
+
+            if (!daroodChecked) {
+                alert('Hazri lagane ke liye Darood Shareef parh kar checkbox ko tick karein.');
+                return;
+            }
+
+            const now = getEffectiveDate();
+            const hour = now.getHours();
+
+            let status = 'Present';
+            if (hour >= 9) {
+                if (hour > 9 || now.getMinutes() > 0 || now.getSeconds() > 0) {
+                    status = 'Late';
+                }
+            }
+
+            const dateStr = now.toISOString().split('T')[0];
+            const timeFormatted = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            const record = {
+                id: 'LALKAR_' + Date.now(),
+                name: staffName,
+                phone: phoneInput,
+                date: dateStr,
+                time: timeFormatted,
+                status: status,
+                timestamp: now.getTime()
+            };
+
+            const records = getStoredRecords();
+            records.unshift(record);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+
+            document.getElementById('attendanceForm').reset();
+            document.getElementById('phoneStatusMsg').textContent = 'Apna registered mobile number enter karein';
+            document.getElementById('phoneStatusMsg').className = 'mt-1 text-xs text-slate-500';
+
+            showResultModal(record);
+        }
+
+        function getStoredRecords() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function showResultModal(record) {
+            const modal = document.getElementById('resultModal');
+            const iconContainer = document.getElementById('modalIconContainer');
+            const title = document.getElementById('modalTitle');
+            const subtitle = document.getElementById('modalSubtitle');
+            
+            document.getElementById('modalName').textContent = record.name;
+            document.getElementById('modalPhone').textContent = record.phone;
+            document.getElementById('modalTime').textContent = `${record.date} ${record.time}`;
+
+            const modalBadge = document.getElementById('modalBadge');
+
+            if (record.status === 'Present') {
+                iconContainer.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl bg-emerald-100 text-emerald-700 shadow-inner";
+                iconContainer.innerHTML = '<i class="fa-solid fa-square-check"></i>';
+                title.textContent = 'Attendance Recorded!';
+                subtitle.textContent = 'Aap ki hazri On Time (Present) daraj ho chuki hai.';
+                modalBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300';
+                modalBadge.textContent = 'PRESENT (ON TIME)';
+            } else {
+                iconContainer.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl bg-amber-100 text-amber-700 shadow-inner";
+                iconContainer.innerHTML = '<i class="fa-solid fa-clock"></i>';
+                title.textContent = 'Late Attendance Recorded';
+                subtitle.textContent = 'Aap 9:00 AM ke baad hazir hue hain (Late).';
+                modalBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300';
+                modalBadge.textContent = 'LATE';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeResultModal() {
+            document.getElementById('resultModal').classList.add('hidden');
+        }
+
+        /* Admin Tab Switcher */
+        function switchAdminTab(tabName) {
+            const recordsView = document.getElementById('recordsView');
+            const membersView = document.getElementById('membersView');
+            const tabRecordsBtn = document.getElementById('tabRecordsBtn');
+            const tabMembersBtn = document.getElementById('tabMembersBtn');
+
+            if (tabName === 'records') {
+                recordsView.classList.remove('hidden');
+                membersView.classList.add('hidden');
+                tabRecordsBtn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-teal-700 text-white shadow";
+                tabMembersBtn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200";
+            } else {
+                recordsView.classList.add('hidden');
+                membersView.classList.remove('hidden');
+                tabMembersBtn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-teal-700 text-white shadow";
+                tabRecordsBtn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200";
+                renderMembersTable();
+            }
+        }
+
+        /* Admin Controls */
+        function openAdminModal() {
+            document.getElementById('adminPinInput').value = '';
+            document.getElementById('pinErrorMsg').classList.add('hidden');
+            document.getElementById('pinModal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('pinModal').classList.add('hidden');
+        }
+
+        function verifyAdminPin() {
+            const pin = document.getElementById('adminPinInput').value;
+            if (pin === ADMIN_PIN) {
+                closeAdminModal();
+                document.getElementById('userPortal').classList.add('hidden');
+                document.getElementById('adminPortal').classList.remove('hidden');
+                switchAdminTab('records');
+                renderAdminTable();
+            } else {
+                document.getElementById('pinErrorMsg').classList.remove('hidden');
+            }
+        }
+
+        function closeAdminPortal() {
+            document.getElementById('adminPortal').classList.add('hidden');
+            document.getElementById('userPortal').classList.remove('hidden');
+        }
+
+        /* Render Attendance Records Table */
+        function renderAdminTable() {
+            const records = getStoredRecords();
+            const tbody = document.getElementById('attendanceTableBody');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const filterVal = document.getElementById('statusFilter').value;
+
+            let filtered = records.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(searchVal) || item.phone.includes(searchVal);
+                const matchesStatus = (filterVal === 'ALL') ? true : item.status === filterVal;
+                return matchesSearch && matchesStatus;
+            });
+
+            document.getElementById('statTotal').textContent = records.length;
+            document.getElementById('statPresent').textContent = records.filter(r => r.status === 'Present').length;
+            document.getElementById('statLate').textContent = records.filter(r => r.status === 'Late').length;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Koi record nahi mila.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((item, idx) => `
+                <tr class="hover:bg-slate-50 border-b border-slate-100">
+                    <td class="p-3.5 text-center font-bold text-slate-400">${idx + 1}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${item.name}</td>
+                    <td class="p-3.5 font-mono">${item.phone}</td>
+                    <td class="p-3.5">${item.date} ${item.time}</td>
+                    <td class="p-3.5 text-center">
+                        <span class="px-2 py-1 rounded-full text-xs font-bold ${item.status === 'Present' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                            ${item.status}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="deleteRecord('${item.id}')" class="text-red-500 hover:text-red-700">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        /* Render & Manage Saved Members */
+        function renderMembersTable() {
+            const members = getSavedMembers();
+            const tbody = document.getElementById('membersTableBody');
+
+            if (members.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">Koi member save nahi hai. Upar se add karein.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = members.map((m, idx) => `
+                <tr class="hover:bg-slate-50 border-b border-slate-100">
+                    <td class="p-3.5 text-center font-bold text-slate-400">${idx + 1}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${m.name}</td>
+                    <td class="p-3.5 font-mono text-teal-700">${m.phone}</td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="deleteMember('${m.phone}')" class="text-red-500 hover:text-red-700">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function addNewMember(e) {
+            e.preventDefault();
+            const name = document.getElementById('newMemberName').value.trim();
+            const phone = document.getElementById('newMemberPhone').value.trim();
+
+            if (!name || !phone) return;
+
+            let members = getSavedMembers();
+            if (members.some(m => m.phone === phone)) {
+                alert('Yeh mobile number pehle se save hai!');
+                return;
+            }
+
+            members.push({ name, phone });
+            localStorage.setItem(MEMBERS_KEY, JSON.stringify(members));
+
+            document.getElementById('newMemberName').value = '';
+            document.getElementById('newMemberPhone').value = '';
+
+            renderMembersTable();
+            alert('Member successfully save ho gaya!');
+        }
+
+        function deleteMember(phone) {
+            if (confirm('Kya aap is member ko delete karna chahte hain?')) {
+                let members = getSavedMembers();
+                members = members.filter(m => m.phone !== phone);
+                localStorage.setItem(MEMBERS_KEY, JSON.stringify(members));
+                renderMembersTable();
+            }
+        }
+
+        function deleteRecord(id) {
+            if (confirm('Kya aap is record ko delete karna chahte hain?')) {
+                let records = getStoredRecords();
+                records = records.filter(r => r.id !== id);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                renderAdminTable();
+            }
+        }
+
+        function clearAllDataPrompt() {
+            if (confirm('Kya aap tamaam attendance records delete karna chahte hain?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                renderAdminTable();
+            }
+        }
+
+        function enableSimulatedTime() {
+            const timeVal = document.getElementById('simulatedTimeInput').value;
+            if (timeVal) {
+                customSimulatedTime = timeVal;
+                alert('Time simulation lag gayi hai: ' + timeVal);
+            } else {
+                alert('Pehle time select karein!');
+            }
+        }
+
+        function resetSimulatedTime() {
+            customSimulatedTime = null;
+            document.getElementById('simulatedTimeInput').value = '';
+            alert('Real time restore ho gaya hai.');
+        }
+
+        function exportToCSV() {
+            const records = getStoredRecords();
+            if (records.length === 0) {
+                alert('Export karne ke liye koi data nahi hai.');
+                return;
+            }
+            let csv = 'Sr No,Name,Phone,Date,Time,Status\n';
+            records.forEach((r, idx) => {
+                csv += `"${idx + 1}","${r.name}","${r.phone}","${r.date}","${r.time}","${r.status}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'lalkar_attendance_records.csv';
+            a.click();
+        }
+    </script>
+</body>
+</html>
